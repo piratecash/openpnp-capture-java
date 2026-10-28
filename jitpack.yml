@@ -21,6 +21,7 @@ before_install:
     FETCH_ATTEMPTS=40 FETCH_DELAY=45 bash scripts/download-openpnp-capture.sh "$TAG"
     )
 
-# With tests: LoadLibraryTest loads the linux-x86-64 library on JitPack's host.
+# No tests: LoadLibraryTest would load the Linux library on JitPack's build image, which is older
+# than the supported desktops; the native release loads every library on its own runner instead.
 install:
-  - mvn -B install
+  - mvn -B -DskipTests install
