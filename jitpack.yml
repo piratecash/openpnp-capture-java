@@ -1,0 +1,26 @@
+jdk:
+  - openjdk11
+
+before_install:
+  # The subshell is required: JitPack runs these commands in its own wrapper shell, and a
+  # leaking `set -u` kills it later on an unset variable of its own.
+  - |
+    (
+    set -eu
+    TAG="${JITPACK_VERSION:-${VERSION:-}}"
+    case "$TAG" in
+      v*) ;;
+      *)
+        echo "the natives ship with version tags only: build a v* tag, or depend on a version that is already published (got '${TAG:-<unset>}')" >&2
+        exit 1
+        ;;
+    esac
+
+    # The native fork carries the same tag. Its binaries appear only when its release matrix
+    # finishes, and a build that gives up here becomes a failed version that needs a manual delete.
+    FETCH_ATTEMPTS=40 FETCH_DELAY=45 bash scripts/download-openpnp-capture.sh "$TAG"
+    )
+
+# With tests: LoadLibraryTest loads the linux-x86-64 library on JitPack's host.
+install:
+  - mvn -B install
